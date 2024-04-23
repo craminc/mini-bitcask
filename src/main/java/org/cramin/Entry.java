@@ -3,13 +3,15 @@ package org.cramin;
 import java.nio.ByteBuffer;
 
 public class Entry {
-    private static final int ENTRY_HEAD_LEN = 2 + 4 + 4;
+    public static final int ENTRY_HEAD_LEN = 2 + 4 + 4;
+    public static final short DEL = 1;
+    public static final short PUT = 2;
 
-    private short mark;
-    private int keySize;
-    private int valueSize;
-    private byte[] key;
-    private byte[] value;
+    public short mark;
+    public int keySize;
+    public int valueSize;
+    public byte[] key;
+    public byte[] value;
 
     public Entry(short mark, byte[] key, byte[] value) {
         this(mark, key.length, value.length, key, value);
@@ -23,9 +25,14 @@ public class Entry {
         this.value = value;
     }
 
+    public Entry(short mark, int keySize, int valueSize) {
+        this.mark = mark;
+        this.keySize = keySize;
+        this.valueSize = valueSize;
+    }
+
     public byte[] encode() {
-        int bufLen = keySize + valueSize + ENTRY_HEAD_LEN;
-        ByteBuffer buf = ByteBuffer.allocate(bufLen);
+        ByteBuffer buf = ByteBuffer.allocate(this.size());
         buf.putShort(mark);
         buf.putInt(keySize);
         buf.putInt(valueSize);
@@ -35,16 +42,16 @@ public class Entry {
         return buf.array();
     }
 
-    public Entry decode(byte[] bytes) {
+    public static Entry decode(byte[] bytes) {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         short mark = buf.getShort();
         int keySize = buf.getInt();
         int valueSize = buf.getInt();
-        byte[] key = new byte[keySize];
-        buf.get(key);
-        byte[] value = new byte[valueSize];
-        buf.get(value);
 
-        return new Entry(mark, keySize, valueSize, key, value);
+        return new Entry(mark, keySize, valueSize);
+    }
+
+    public int size() {
+        return ENTRY_HEAD_LEN + keySize + valueSize;
     }
 }
