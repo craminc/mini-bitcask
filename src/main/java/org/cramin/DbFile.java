@@ -39,13 +39,15 @@ public class DbFile implements Closeable {
         return entry;
     }
 
-    public void write(Entry entry) throws IOException {
+    public long write(Entry entry) throws IOException {
         byte[] bytes = entry.encode();
 
         file.seek(offset);
         file.write(bytes);
 
         this.offset = file.length();
+
+        return this.offset;
     }
 
 

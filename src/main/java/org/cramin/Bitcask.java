@@ -3,8 +3,10 @@ package org.cramin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @Author: cramin
@@ -18,7 +20,9 @@ public class Bitcask {
     // 数据文件
     public final DbFile dbFile;
     // 索引
-    public final Map<String, Long> index = new ConcurrentHashMap<>();
+    public final Map<String, Long> index = new HashMap<>();
+
+    private ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     private Bitcask(String dirPath) throws IOException {
         this.dirPath = dirPath;
@@ -32,7 +36,8 @@ public class Bitcask {
             if (dir.mkdirs()) {
                 System.out.println("数据文件目录不存在，创建目录：" + dir.getAbsolutePath());
             } else {
-                System.out.println("数据文件目录不存在，创建目录失败");
+                System.err.println("数据文件目录不存在，创建目录失败");
+                throw new IOException();
             }
         }
 
@@ -56,6 +61,42 @@ public class Bitcask {
             }
 
             offset += entry.size();
+        }
+    }
+
+    public void put(String key, Serializable value) {
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        byte[] valueBytes = value.serialize();
+        Entry entry = new Entry(Entry.PUT, keyBytes, valueBytes);
+
+        rwlock.writeLock().lock();
+        try {
+            long offset = dbFile.write(entry);
+            index.put(key, offset);
+        } catch (IOException e) {
+            System.err.println("put error");
+            throw new RuntimeException(e);
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
+    public Serializable get(String key) {
+        rwlock.readLock().lock();
+        try {
+            Long offset = index.get(key);
+            if (offset == null) {
+                return null;
+            }
+            Entry entry = dbFile.read(offset);
+            byte[] valueBytes = entry.value;
+
+
+        } catch (IOException e) {
+            System.err.println("get error");
+            throw new RuntimeException(e);
+        } finally {
+            rwlock.readLock().unlock();
         }
     }
 }
