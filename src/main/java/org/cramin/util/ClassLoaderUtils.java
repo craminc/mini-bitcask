@@ -1,4 +1,6 @@
-package org.cramin;
+package org.cramin.util;
+
+import org.cramin.model.Serializable;
 
 import java.io.File;
 import java.net.URL;
@@ -53,7 +55,7 @@ public class ClassLoaderUtils {
             } else if (file.getName().endsWith(".class")) {
                 // 如果是类文件，加载类并检查是否实现了指定接口
                 try {
-                    String className = packageName + file.getName().substring(0, file.getName().length() - 6);
+                    String className = packageName + "." +  file.getName().substring(0, file.getName().length() - 6);
                     Class<?> clazz = Class.forName(className);
                     if (interfaceClass.isAssignableFrom(clazz) && !clazz.isInterface() && !clazz.isEnum()) {
                         implementations.add((Class<T>) clazz);
@@ -65,5 +67,12 @@ public class ClassLoaderUtils {
             }
         }
         return implementations;
+    }
+
+    public static void main(String[] args) {
+        List<Class<Serializable>> classes = ClassLoaderUtils.loadImplement(Serializable.class);
+        for (Class<Serializable> aClass : classes) {
+            System.out.println();
+        }
     }
 }

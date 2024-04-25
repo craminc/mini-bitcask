@@ -1,4 +1,4 @@
-package org.cramin;
+package org.cramin.bitcask;
 
 import java.nio.ByteBuffer;
 

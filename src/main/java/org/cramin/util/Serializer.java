@@ -1,6 +1,7 @@
-package org.cramin;
+package org.cramin.util;
 
-import java.lang.reflect.InvocationTargetException;
+import org.cramin.model.Serializable;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Map;
  * @Desc:
  */
 public class Serializer {
-    public static final Map<Byte, Serializable> serializableMap = new HashMap<>();
+    private static final Map<Byte, Serializable> serializableMap = new HashMap<>();
 
     static {
         // 加载所有实现了 Serializable 方法的类

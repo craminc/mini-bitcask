@@ -1,4 +1,4 @@
-package org.cramin;
+package org.cramin.model;
 
 /**
  * @Author: cramin
@@ -6,7 +6,10 @@ package org.cramin;
  * @Desc:
  */
 public interface Serializable {
+
     byte getSerialVersionUID();
+
     byte[] serialize();
+
     Serializable deserialize(byte[] data);
 }
